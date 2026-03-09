@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+uploads/
+logs/
+*.log
+.vscode/
+.idea/
+*.tsbuildinfo
+setup-blog-src.sh
+setup-projects-module.sh
+setup-projects-v2.sh
