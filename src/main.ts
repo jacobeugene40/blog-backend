@@ -18,15 +18,19 @@ async function bootstrap() {
 
   // ── CORS ──────────────────────────────────────────────────────
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3002',
-      'https://my-portifolio-tau-eight.vercel.app',
-      'https://jacob-chidi-eugene.vercel.app',
-      'https://jacobchidieugen.com',
-      'https://jce-admin-ciu8757rc-jacob-chidi-eugenes-projects.vercel.app',
-      'https://jce-admin-83j28z7a3-jacob-chidi-eugenes-projects.vercel.app',
-    ],
+    origin: function (origin, callback) {
+      const allowed = [
+        'http://localhost:3000',
+        'http://localhost:3002',
+        'https://jacobchidieugen.com',
+      ];
+      // Allow any *.vercel.app subdomain (covers all preview + production deployments)
+      if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   });
 
