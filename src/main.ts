@@ -18,7 +18,14 @@ async function bootstrap() {
 
   // ── CORS ──────────────────────────────────────────────────────
   app.enableCors({
-    origin: true, // temporarily allow all origins
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3002',
+      'https://my-portifolio-tau-eight.vercel.app',
+      'https://jacobchidieugen.com',
+      'https://jce-admin-ciu8757rc-jacob-chidi-eugenes-projects.vercel.app',
+      'https://jce-admin-83j28z7a3-jacob-chidi-eugenes-projects.vercel.app',
+    ],
     credentials: true,
   });
 
