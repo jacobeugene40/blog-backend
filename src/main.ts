@@ -14,7 +14,6 @@ async function bootstrap() {
   if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
   // ── Serve uploaded images as static files ─────────────────────
-  // Access via: http://localhost:3001/uploads/projects/filename.jpg
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
 
   // ── CORS ──────────────────────────────────────────────────────
@@ -24,6 +23,7 @@ async function bootstrap() {
       'http://localhost:3002',
       'https://my-portifolio-tau-eight.vercel.app',
       'https://jacobchidieugen.com',
+      'https://jce-admin-ciu8757rc-jacob-chidi-eugenes-projects.vercel.app',
     ],
     credentials: true,
   });
@@ -57,4 +57,3 @@ async function bootstrap() {
   console.log(`🖼️  Uploads served at http://localhost:${port}/uploads/`);
 }
 bootstrap();
-
