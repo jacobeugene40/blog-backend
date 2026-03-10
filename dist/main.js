@@ -46,12 +46,19 @@ async function bootstrap() {
         fs.mkdirSync(uploadsDir, { recursive: true });
     app.useStaticAssets((0, path_1.join)(process.cwd(), 'uploads'), { prefix: '/uploads' });
     app.enableCors({
-        origin: [
-            'http://localhost:3000',
-            'http://localhost:3002',
-            'https://my-portifolio-tau-eight.vercel.app',
-            'https://jce-admin-ciu8757rc-jacob-chidi-eugenes-projects.vercel.app',
-        ],
+        origin: function (origin, callback) {
+            const allowed = [
+                'http://localhost:3000',
+                'http://localhost:3002',
+                'https://jacobchidieugen.com',
+            ];
+            if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
+                callback(null, true);
+            }
+            else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         credentials: true,
     });
     app.useGlobalPipes(new common_1.ValidationPipe({
