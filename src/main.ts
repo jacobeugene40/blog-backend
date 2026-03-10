@@ -23,6 +23,7 @@ async function bootstrap() {
         'http://localhost:3000',
         'http://localhost:3002',
         'https://jacobchidieugen.com',
+        'https://jacob-chidi-eugene.vercel.app/',
       ];
       // Allow any *.vercel.app subdomain (covers all preview + production deployments)
       if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {

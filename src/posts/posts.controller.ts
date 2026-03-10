@@ -10,7 +10,7 @@ import { QueryPostsDto } from './dto/query-posts.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 /* ── Config ─────────────────────────────────────────────────── */
-const FRONTEND_URL  = process.env.FRONTEND_URL  || 'https://jacobchidieugen.com';
+const FRONTEND_URL  = process.env.FRONTEND_URL  || 'https://jacob-chidi-eugene.vercel.app';
 const BACKEND_URL   = process.env.BACKEND_URL   || 'https://blog-backend-8oer.onrender.com';
 const FALLBACK_IMG  = `${FRONTEND_URL}/og-cover.jpg`;
 
