@@ -1,3 +1,4 @@
+import type { Response } from 'express';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { QueryPostsDto } from './dto/query-posts.dto';
@@ -17,6 +18,7 @@ export declare class PostsController {
     like(id: string): Promise<{
         likeCount: number;
     }>;
+    ogProxy(slug: string, res: Response): Promise<void>;
     findAllAdmin(query: QueryPostsDto): Promise<{
         data: import("./post.entity").Post[];
         meta: {

@@ -10,6 +10,8 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
+const throttler_1 = require("@nestjs/throttler");
+const core_1 = require("@nestjs/core");
 const auth_module_1 = require("./auth/auth.module");
 const posts_module_1 = require("./posts/posts.module");
 const categories_module_1 = require("./categories/categories.module");
@@ -23,6 +25,10 @@ exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule.forRoot({ isGlobal: true }),
+            throttler_1.ThrottlerModule.forRoot([{
+                    ttl: 60000,
+                    limit: 60,
+                }]),
             typeorm_1.TypeOrmModule.forRootAsync({
                 imports: [config_1.ConfigModule],
                 inject: [config_1.ConfigService],
@@ -43,6 +49,12 @@ exports.AppModule = AppModule = __decorate([
             comments_module_1.CommentsModule,
             interactions_module_1.InteractionsModule,
             projects_module_1.ProjectsModule,
+        ],
+        providers: [
+            {
+                provide: core_1.APP_GUARD,
+                useClass: throttler_1.ThrottlerGuard,
+            },
         ],
     })
 ], AppModule);

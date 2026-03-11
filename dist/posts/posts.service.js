@@ -20,6 +20,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const slugify_1 = __importDefault(require("slugify"));
+const uuid_1 = require("uuid");
 const post_entity_1 = require("./post.entity");
 const categories_service_1 = require("../categories/categories.service");
 let PostsService = class PostsService {
@@ -79,10 +80,9 @@ let PostsService = class PostsService {
         return post;
     }
     async create(dto) {
-        const slug = (0, slugify_1.default)(dto.title, { lower: true, strict: true });
-        const exists = await this.repo.findOne({ where: { slug } });
-        if (exists)
-            throw new common_1.ConflictException('A post with this title already exists');
+        const base = (0, slugify_1.default)(dto.title, { lower: true, strict: true });
+        const suffix = (0, uuid_1.v4)().replace(/-/g, '').slice(0, 6);
+        const slug = `${base}-${suffix}`;
         const post = this.repo.create({ ...dto, slug });
         if (dto.categoryId) {
             post.category = await this.categoriesService.findOne(dto.categoryId);
@@ -91,14 +91,11 @@ let PostsService = class PostsService {
     }
     async update(id, dto) {
         const post = await this.findById(id);
-        if (dto.title) {
-            const newSlug = (0, slugify_1.default)(dto.title, { lower: true, strict: true });
-            if (newSlug !== post.slug) {
-                const conflict = await this.repo.findOne({ where: { slug: newSlug } });
-                if (conflict)
-                    throw new common_1.ConflictException('A post with this title already exists');
-                post.slug = newSlug;
-            }
+        if (dto.title && dto.title !== post.title) {
+            const existingSuffix = post.slug.match(/-([a-f0-9]{6})$/)?.[1];
+            const base = (0, slugify_1.default)(dto.title, { lower: true, strict: true });
+            const suffix = existingSuffix || (0, uuid_1.v4)().replace(/-/g, '').slice(0, 6);
+            post.slug = `${base}-${suffix}`;
         }
         if (dto.categoryId) {
             post.category = await this.categoriesService.findOne(dto.categoryId);

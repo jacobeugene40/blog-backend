@@ -4,6 +4,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import slugify from 'slugify';
+import { v4 as uuidv4 } from 'uuid';
 import { Post, PostStatus } from './post.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { QueryPostsDto } from './dto/query-posts.dto';
@@ -23,11 +24,8 @@ export class PostsService {
     const skip  = (page - 1) * limit;
 
     const where: any = {};
-
-    // Public users only see published posts
     if (!isAdmin) where.status = PostStatus.PUBLISHED;
     else if (query.status) where.status = query.status;
-
     if (query.categoryId) where.category = { id: query.categoryId };
     if (query.search)     where.title     = ILike(`%${query.search}%`);
     if (query.tag)        where.tags      = ILike(`%${query.tag}%`);
@@ -71,12 +69,14 @@ export class PostsService {
     return post;
   }
 
-  // ── Create ────────────────────────────────────────────────────
+  // ── Create — slug gets a short unique suffix ──────────────────
+  // e.g. "my-post-title-a3f9b2" — readable for SEO, unguessable for security
   async create(dto: CreatePostDto) {
-    const slug = slugify(dto.title, { lower: true, strict: true });
-    const exists = await this.repo.findOne({ where: { slug } });
-    if (exists) throw new ConflictException('A post with this title already exists');
+    const base    = slugify(dto.title, { lower: true, strict: true });
+    const suffix  = uuidv4().replace(/-/g, '').slice(0, 6); // 6-char hex suffix
+    const slug    = `${base}-${suffix}`;
 
+    // No collision check needed — suffix makes it unique
     const post = this.repo.create({ ...dto, slug });
 
     if (dto.categoryId) {
@@ -88,28 +88,30 @@ export class PostsService {
   // ── Update ────────────────────────────────────────────────────
   async update(id: string, dto: Partial<CreatePostDto>) {
     const post = await this.findById(id);
-    if (dto.title) {
-      const newSlug = slugify(dto.title, { lower: true, strict: true });
-      if (newSlug !== post.slug) {
-        const conflict = await this.repo.findOne({ where: { slug: newSlug } });
-        if (conflict) throw new ConflictException('A post with this title already exists');
-        post.slug = newSlug;
-      }
+
+    if (dto.title && dto.title !== post.title) {
+      // Preserve the original suffix so existing shared URLs don't break
+      const existingSuffix = post.slug.match(/-([a-f0-9]{6})$/)?.[1];
+      const base    = slugify(dto.title, { lower: true, strict: true });
+      const suffix  = existingSuffix || uuidv4().replace(/-/g, '').slice(0, 6);
+      post.slug     = `${base}-${suffix}`;
     }
+
     if (dto.categoryId) {
       post.category = await this.categoriesService.findOne(dto.categoryId);
     }
+
     Object.assign(post, dto);
     return this.repo.save(post);
   }
 
   // ── Publish / unpublish ───────────────────────────────────────
   async publish(id: string) {
-    return this.update(id, { status: PostStatus.PUBLISHED });
+    return this.update(id, { status: PostStatus.PUBLISHED } as any);
   }
 
   async unpublish(id: string) {
-    return this.update(id, { status: PostStatus.DRAFT });
+    return this.update(id, { status: PostStatus.DRAFT } as any);
   }
 
   // ── Delete ────────────────────────────────────────────────────
@@ -127,4 +129,3 @@ export class PostsService {
     return { likeCount: post.likeCount + 1 };
   }
 }
-

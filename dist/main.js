@@ -51,6 +51,7 @@ async function bootstrap() {
                 'http://localhost:3000',
                 'http://localhost:3002',
                 'https://jacobchidieugen.com',
+                'https://jacob-chidi-eugene.vercel.app/',
             ];
             if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
                 callback(null, true);
