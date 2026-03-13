@@ -76,6 +76,8 @@ let PostsController = class PostsController {
   <meta name="description"    content="${description}" />
   <meta name="author"         content="${author}" />
   <meta name="robots"         content="index, follow" />
+  <!-- Tell Facebook to use site_name not the domain -->
+  <meta property="og:site_name" content="${siteName}" />
 
   <meta property="og:type"         content="article" />
   <meta property="og:site_name"    content="${siteName}" />

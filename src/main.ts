@@ -6,6 +6,24 @@ import { AppModule } from './app.module';
 import { join } from 'path';
 import * as fs from 'fs';
 
+// Known social crawler user-agent substrings
+const CRAWLER_UAS = [
+  'facebookexternalhit',
+  'Facebot',
+  'Twitterbot',
+  'LinkedInBot',
+  'WhatsApp',
+  'TelegramBot',
+  'Slackbot',
+  'redditbot',
+  'Pinterest',
+  'Googlebot',
+];
+
+function isCrawler(ua: string = ''): boolean {
+  return CRAWLER_UAS.some(bot => ua.toLowerCase().includes(bot.toLowerCase()));
+}
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
@@ -23,16 +41,36 @@ async function bootstrap() {
         'http://localhost:3000',
         'http://localhost:3002',
         'https://jacobchidieugen.com',
-        'https://jacob-chidi-eugene.vercel.app/',
+        'https://jacob-chidi-eugene.vercel.app',  // ← removed trailing slash
       ];
-      // Allow any *.vercel.app subdomain (covers all preview + production deployments)
-      if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
+      // Allow:
+      // 1. No origin (server-to-server, curl, social crawlers)
+      // 2. Explicitly allowed origins
+      // 3. Any *.vercel.app subdomain (preview deployments)
+      if (
+        !origin ||
+        allowed.includes(origin) ||
+        origin.endsWith('.vercel.app')
+      ) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
       }
     },
     credentials: true,
+  });
+
+  // ── Allow social crawlers through on /og routes ───────────────
+  // @Res() bypasses NestJS CORS — this middleware handles crawlers explicitly
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.use((req: any, res: any, next: any) => {
+    const ua = req.headers['user-agent'] || '';
+    if (req.path.endsWith('/og') && isCrawler(ua)) {
+      // Explicitly allow crawler — set CORS headers manually
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('X-Robots-Tag', 'index, follow');
+    }
+    next();
   });
 
   // ── Global validation pipe ────────────────────────────────────

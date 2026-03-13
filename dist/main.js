@@ -39,6 +39,21 @@ const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
 const path_1 = require("path");
 const fs = __importStar(require("fs"));
+const CRAWLER_UAS = [
+    'facebookexternalhit',
+    'Facebot',
+    'Twitterbot',
+    'LinkedInBot',
+    'WhatsApp',
+    'TelegramBot',
+    'Slackbot',
+    'redditbot',
+    'Pinterest',
+    'Googlebot',
+];
+function isCrawler(ua = '') {
+    return CRAWLER_UAS.some(bot => ua.toLowerCase().includes(bot.toLowerCase()));
+}
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const uploadsDir = (0, path_1.join)(process.cwd(), 'uploads', 'projects');
@@ -51,9 +66,11 @@ async function bootstrap() {
                 'http://localhost:3000',
                 'http://localhost:3002',
                 'https://jacobchidieugen.com',
-                'https://jacob-chidi-eugene.vercel.app/',
+                'https://jacob-chidi-eugene.vercel.app',
             ];
-            if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
+            if (!origin ||
+                allowed.includes(origin) ||
+                origin.endsWith('.vercel.app')) {
                 callback(null, true);
             }
             else {
@@ -61,6 +78,15 @@ async function bootstrap() {
             }
         },
         credentials: true,
+    });
+    const expressApp = app.getHttpAdapter().getInstance();
+    expressApp.use((req, res, next) => {
+        const ua = req.headers['user-agent'] || '';
+        if (req.path.endsWith('/og') && isCrawler(ua)) {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('X-Robots-Tag', 'index, follow');
+        }
+        next();
     });
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
