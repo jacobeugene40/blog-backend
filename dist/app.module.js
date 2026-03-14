@@ -18,6 +18,7 @@ const categories_module_1 = require("./categories/categories.module");
 const comments_module_1 = require("./comments/comments.module");
 const interactions_module_1 = require("./interactions/interactions.module");
 const projects_module_1 = require("./projects/projects.module");
+const testimonials_module_1 = require("./testimonials/testimonials.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -49,6 +50,7 @@ exports.AppModule = AppModule = __decorate([
             comments_module_1.CommentsModule,
             interactions_module_1.InteractionsModule,
             projects_module_1.ProjectsModule,
+            testimonials_module_1.TestimonialsModule
         ],
         providers: [
             {

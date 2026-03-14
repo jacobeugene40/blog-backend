@@ -9,6 +9,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { CommentsModule } from './comments/comments.module';
 import { InteractionsModule } from './interactions/interactions.module';
 import { ProjectsModule } from './projects/projects.module';
+import { TestimonialsModule } from './testimonials/testimonials.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ProjectsModule } from './projects/projects.module';
     CommentsModule,
     InteractionsModule,
     ProjectsModule,
+    TestimonialsModule
   ],
   providers: [
     // ── Apply ThrottlerGuard globally to all routes ─────────────
