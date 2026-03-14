@@ -6,22 +6,15 @@ import { AppModule } from './app.module';
 import { join } from 'path';
 import * as fs from 'fs';
 
-// Known social crawler user-agent substrings
 const CRAWLER_UAS = [
-  'facebookexternalhit',
-  'Facebot',
-  'Twitterbot',
-  'LinkedInBot',
-  'WhatsApp',
-  'TelegramBot',
-  'Slackbot',
-  'redditbot',
-  'Pinterest',
-  'Googlebot',
+  'facebookexternalhit', 'facebot', 'twitterbot', 'linkedinbot',
+  'whatsapp', 'telegrambot', 'slackbot', 'redditbot', 'pinterest',
+  'googlebot', 'bingbot', 'applebot', 'discordbot', 'skypeuripreview',
 ];
 
 function isCrawler(ua: string = ''): boolean {
-  return CRAWLER_UAS.some(bot => ua.toLowerCase().includes(bot.toLowerCase()));
+  const lower = ua.toLowerCase();
+  return CRAWLER_UAS.some(bot => lower.includes(bot));
 }
 
 async function bootstrap() {
@@ -34,6 +27,23 @@ async function bootstrap() {
   // ── Serve uploaded images as static files ─────────────────────
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
 
+  // ── Crawler bypass — runs BEFORE NestJS guards ────────────────
+  // Social crawlers have no origin and get blocked by throttler.
+  // This middleware intercepts /og requests from known bots and
+  // serves the OG HTML directly, bypassing the NestJS pipeline.
+  const expressApp = app.getHttpAdapter().getInstance();
+
+  expressApp.use((req: any, res: any, next: any) => {
+    const ua = req.headers['user-agent'] || '';
+
+    if (req.path.includes('/og') && isCrawler(ua)) {
+      // Allow CORS for crawlers
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('X-Robots-Tag', 'index, follow');
+    }
+    next();
+  });
+
   // ── CORS ──────────────────────────────────────────────────────
   app.enableCors({
     origin: function (origin, callback) {
@@ -41,12 +51,8 @@ async function bootstrap() {
         'http://localhost:3000',
         'http://localhost:3002',
         'https://jacobchidieugen.com',
-        'https://jacob-chidi-eugene.vercel.app',  // ← removed trailing slash
+        'https://jacob-chidi-eugene.vercel.app',
       ];
-      // Allow:
-      // 1. No origin (server-to-server, curl, social crawlers)
-      // 2. Explicitly allowed origins
-      // 3. Any *.vercel.app subdomain (preview deployments)
       if (
         !origin ||
         allowed.includes(origin) ||
@@ -58,19 +64,6 @@ async function bootstrap() {
       }
     },
     credentials: true,
-  });
-
-  // ── Allow social crawlers through on /og routes ───────────────
-  // @Res() bypasses NestJS CORS — this middleware handles crawlers explicitly
-  const expressApp = app.getHttpAdapter().getInstance();
-  expressApp.use((req: any, res: any, next: any) => {
-    const ua = req.headers['user-agent'] || '';
-    if (req.path.endsWith('/og') && isCrawler(ua)) {
-      // Explicitly allow crawler — set CORS headers manually
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('X-Robots-Tag', 'index, follow');
-    }
-    next();
   });
 
   // ── Global validation pipe ────────────────────────────────────

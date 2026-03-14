@@ -40,19 +40,13 @@ const app_module_1 = require("./app.module");
 const path_1 = require("path");
 const fs = __importStar(require("fs"));
 const CRAWLER_UAS = [
-    'facebookexternalhit',
-    'Facebot',
-    'Twitterbot',
-    'LinkedInBot',
-    'WhatsApp',
-    'TelegramBot',
-    'Slackbot',
-    'redditbot',
-    'Pinterest',
-    'Googlebot',
+    'facebookexternalhit', 'facebot', 'twitterbot', 'linkedinbot',
+    'whatsapp', 'telegrambot', 'slackbot', 'redditbot', 'pinterest',
+    'googlebot', 'bingbot', 'applebot', 'discordbot', 'skypeuripreview',
 ];
 function isCrawler(ua = '') {
-    return CRAWLER_UAS.some(bot => ua.toLowerCase().includes(bot.toLowerCase()));
+    const lower = ua.toLowerCase();
+    return CRAWLER_UAS.some(bot => lower.includes(bot));
 }
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
@@ -60,6 +54,15 @@ async function bootstrap() {
     if (!fs.existsSync(uploadsDir))
         fs.mkdirSync(uploadsDir, { recursive: true });
     app.useStaticAssets((0, path_1.join)(process.cwd(), 'uploads'), { prefix: '/uploads' });
+    const expressApp = app.getHttpAdapter().getInstance();
+    expressApp.use((req, res, next) => {
+        const ua = req.headers['user-agent'] || '';
+        if (req.path.includes('/og') && isCrawler(ua)) {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('X-Robots-Tag', 'index, follow');
+        }
+        next();
+    });
     app.enableCors({
         origin: function (origin, callback) {
             const allowed = [
@@ -78,15 +81,6 @@ async function bootstrap() {
             }
         },
         credentials: true,
-    });
-    const expressApp = app.getHttpAdapter().getInstance();
-    expressApp.use((req, res, next) => {
-        const ua = req.headers['user-agent'] || '';
-        if (req.path.endsWith('/og') && isCrawler(ua)) {
-            res.setHeader('Access-Control-Allow-Origin', '*');
-            res.setHeader('X-Robots-Tag', 'index, follow');
-        }
-        next();
     });
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,

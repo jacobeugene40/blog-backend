@@ -178,8 +178,8 @@ __decorate([
 ], PostsController.prototype, "like", null);
 __decorate([
     (0, common_1.Get)(':slug/og'),
-    (0, throttler_1.Throttle)({ default: { limit: 30, ttl: 60000 } }),
-    (0, swagger_1.ApiOperation)({ summary: 'Open Graph proxy page for social sharing' }),
+    (0, throttler_1.SkipThrottle)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Open Graph proxy — crawlers must never be throttled' }),
     __param(0, (0, common_1.Param)('slug')),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),

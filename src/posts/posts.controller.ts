@@ -59,8 +59,8 @@ export class PostsController {
   // ── OG proxy — 30 per minute (crawlers don't need more) ──────
 
   @Get(':slug/og')
-  @Throttle({ default: { limit: 30, ttl: 60000 } })
-  @ApiOperation({ summary: 'Open Graph proxy page for social sharing' })
+  @SkipThrottle()
+  @ApiOperation({ summary: 'Open Graph proxy — crawlers must never be throttled' })
   async ogProxy(@Param('slug') slug: string, @Res() res: Response) {
     let post: any = null;
     try {
