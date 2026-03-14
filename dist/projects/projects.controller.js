@@ -21,14 +21,29 @@ const swagger_1 = require("@nestjs/swagger");
 const projects_service_1 = require("./projects.service");
 const project_dto_1 = require("./dto/project.dto");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const cloudinary_1 = require("cloudinary");
 const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.webp'];
-const imageStorage = (0, multer_1.diskStorage)({
-    destination: (0, path_1.join)(process.cwd(), 'uploads', 'projects'),
-    filename: (_req, file, cb) => {
-        const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, unique + (0, path_1.extname)(file.originalname));
-    },
+cloudinary_1.v2.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+function uploadToCloudinary(buffer, folder) {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary_1.v2.uploader.upload_stream({
+            folder,
+            transformation: [
+                { width: 1200, height: 630, crop: 'fill', gravity: 'auto' },
+                { quality: 'auto', fetch_format: 'auto' },
+            ],
+        }, (error, result) => {
+            if (error || !result)
+                return reject(error);
+            resolve(result.secure_url);
+        });
+        stream.end(buffer);
+    });
+}
 let ProjectsController = class ProjectsController {
     svc;
     constructor(svc) {
@@ -51,7 +66,7 @@ let ProjectsController = class ProjectsController {
         if (!ALLOWED_EXT.includes(ext)) {
             throw new common_1.BadRequestException('Only JPG, PNG and WEBP images are allowed');
         }
-        const imageUrl = `/uploads/projects/${file.filename}`;
+        const imageUrl = await uploadToCloudinary(file.buffer, 'jce-portfolio/projects');
         await this.svc.update(id, { coverImage: imageUrl });
         return { imageUrl };
     }
@@ -146,10 +161,10 @@ __decorate([
     (0, common_1.Post)(':id/upload-image'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('image', { storage: imageStorage })),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('image', { storage: (0, multer_1.memoryStorage)() })),
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiBody)({ schema: { type: 'object', properties: { image: { type: 'string', format: 'binary' } } } }),
-    (0, swagger_1.ApiOperation)({ summary: 'Upload cover image for a project (admin)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Upload cover image for a project (stored on Cloudinary)' }),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __param(1, (0, common_1.UploadedFile)()),
     __metadata("design:type", Function),

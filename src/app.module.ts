@@ -10,6 +10,7 @@ import { CommentsModule } from './comments/comments.module';
 import { InteractionsModule } from './interactions/interactions.module';
 import { ProjectsModule } from './projects/projects.module';
 import { TestimonialsModule } from './testimonials/testimonials.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { TestimonialsModule } from './testimonials/testimonials.module';
     CommentsModule,
     InteractionsModule,
     ProjectsModule,
+    CloudinaryModule,
     TestimonialsModule
   ],
   providers: [

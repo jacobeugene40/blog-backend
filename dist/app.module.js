@@ -19,6 +19,7 @@ const comments_module_1 = require("./comments/comments.module");
 const interactions_module_1 = require("./interactions/interactions.module");
 const projects_module_1 = require("./projects/projects.module");
 const testimonials_module_1 = require("./testimonials/testimonials.module");
+const cloudinary_module_1 = require("./cloudinary/cloudinary.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -50,6 +51,7 @@ exports.AppModule = AppModule = __decorate([
             comments_module_1.CommentsModule,
             interactions_module_1.InteractionsModule,
             projects_module_1.ProjectsModule,
+            cloudinary_module_1.CloudinaryModule,
             testimonials_module_1.TestimonialsModule
         ],
         providers: [
