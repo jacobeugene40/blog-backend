@@ -74,10 +74,16 @@ npm run start:dev
 5. Add PostgreSQL database in Render
 6. Set env vars
 
-## First Login
+## Database
+[![Powered by Neon](https://neon.com/brand/neon-badge.svg)](https://neon.com)
 
-On first startup, the admin is auto-seeded using your `.env` values:
-- Email: `ADMIN_EMAIL`  
-- Password: `ADMIN_PASSWORD`
+This project uses [Neon](https://neon.com) — serverless PostgreSQL.
+```
 
-**Change your password immediately after first login.**
+**3. Publish your Neon $1B post TODAY**
+You already have it written. Publishing it before Neon responds shows them you are actively promoting them — not just collecting credits. When they review your application and Google your name, they will find a full article about their acquisition. That is a very strong signal.
+
+**4. Apply for DigitalOcean affiliate in parallel**
+Don't wait for Neon — DigitalOcean approves instantly:
+```
+digitalocean.com/affiliates
